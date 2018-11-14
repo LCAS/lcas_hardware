@@ -28,6 +28,7 @@ class PenetrometerServer(object):
         """
         self.cancelled = False
         self.running=True
+        self.reply_buf=[]
         
         self.serial_port = rospy.get_param('~serial_port', '/dev/tnt0')     
         
@@ -57,17 +58,31 @@ class PenetrometerServer(object):
         
         
         rospy.loginfo("ALL done ...")
+        
+        self.initialise_penetrometer()
         rospy.spin()
         
         self.running=False
         self.ser.close()
         
     def read_from_port(self):
+        serial_buffer=[]
+        #response=[]
         while self.running:
             if (self.ser.inWaiting()>0):                                        #if incoming bytes are waiting to be read from the serial input buffer
-                data_str = self.ser.read(self.ser.inWaiting()).decode('ascii')  #read the bytes and convert from binary array to ASCII
-                print(data_str)                                                 #print the incoming string without putting a new-line ('\n') automatically after every print()
-        #Put the rest of your code you want here
+                data_str = self.ser.read(self.ser.inWaiting())#.decode('ascii')  #read the bytes and convert from binary array to ASCII
+                for i in data_str:
+                    serial_buffer.append(i)
+                if '\n' in serial_buffer:
+                    print "end found"
+                    nind= serial_buffer.index('\n')
+                    self.reply_buf.append(serial_buffer[0:nind])
+                    for i in reversed(range(nind+1)):
+                        serial_buffer.pop(i)
+                    print serial_buffer
+
+                if len(self.reply_buf)>0:
+                    print(self.reply_buf)      
         rospy.sleep(0.1) # Optional: sleep 10 ms (0.01 sec) once per loop to let other threads on your PC run 
 
     def dyn_reconf_callback(self, config, level):
@@ -75,6 +90,40 @@ class PenetrometerServer(object):
         #self.max_counts = config['counts']
         print "reconfigure ", config
         return config
+
+    def send_command(self, command):
+        for i in command:
+            self.ser.write(i)
+            rospy.sleep(0.001)
+        self.ser.write('\n')
+    
+    def wait_for_reply(self, timeout=10):
+        time_count=0
+        response=''
+        replied=False
+        while not replied and time_count<= (timeout*20) :
+            if len(self.reply_buf)>0:
+                response = self.reply_buf.pop(0)
+                replied = True
+            else:
+                rospy.sleep(0.05)
+                time_count+=1
+                
+        return response
+    
+    def initialise_penetrometer(self, retries=3):
+        self.send_command('@')
+        rospy.loginfo("waiting for initialisation confirmation")
+        response = self.wait_for_reply()
+        if ''.join(response) == "@1":
+            rospy.loginfo("initialisation correct!")
+        else:
+            if retries > 0:
+                rospy.loginfo("wrong response try again")
+                self.initialise_penetrometer(retries=retries-1)
+            else:
+                rospy.loginfo("too many fails!!")
+#        self.wait_for_reply
 
 
     def executeCallback(self, goal):
