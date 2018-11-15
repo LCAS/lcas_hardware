@@ -1,0 +1,15 @@
+acceleration: 10
+deceleration: 10
+dist_per_reading: 1
+force_delta_abs: false
+ground_level: 10
+home_speed: 100
+lfd_tolerance: 10
+max_force: 100
+max_force_delta: 100
+min_force: 1
+min_force_delta: 1
+probe_depth: 50
+safe_disconnect: true
+speed: 100
+top_speed: 100

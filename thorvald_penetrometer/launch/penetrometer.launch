@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="thorvald_penetrometer" type="penetrometer_driver.py" name="penetrometer_driver">
+        <rosparam file="$(find thorvald_penetrometer)/cfg/penetrometer_params.yaml" command="load"/>
+    </node>
+</launch>
+
+

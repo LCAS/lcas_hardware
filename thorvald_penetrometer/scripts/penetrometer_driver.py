@@ -4,7 +4,7 @@ import rospy
 import actionlib
 import serial
 import threading
-
+import yaml
 #import actionlib_msgs.msg
 import dynamic_reconfigure.server # import Server
 from thorvald_penetrometer.cfg import PenetrometerConfig
@@ -79,9 +79,22 @@ class PenetrometerServer(object):
         
         rospy.spin()
         
+        self.write_config_to_file()
         self.running=False
         self.ser.close()
         
+
+    def write_config_to_file(self):
+        config = dict(self.config)
+        del config['groups']
+        
+        yml = yaml.safe_dump(config, default_flow_style=False)
+        
+        fh = open("params.yaml", "w")
+        s_output = str(yml)
+        fh.write(s_output)
+        fh.close()
+
 
 
     def read_from_port(self):
@@ -112,11 +125,11 @@ class PenetrometerServer(object):
         if self.config:
             changed_dict = {x: self.config[x] != config[x] for x in self.config if x in config}
             lk = [key  for (key, value) in changed_dict.items() if value]
-            print "config changed ", lk, config[lk[0]]
+            #print "config changed ", lk, config[lk[0]]
             self.set_config(lk[0], config[lk[0]])
             self.config = config
         else:
-            print "First config: ", config.items()            
+            #print "First config: ", config.items()            
             self.config = config
             for i in config.items():
                 self.set_config(i[0], i[1])
