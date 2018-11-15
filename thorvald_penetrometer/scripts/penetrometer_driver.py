@@ -5,6 +5,8 @@ import actionlib
 import serial
 import threading
 import yaml
+
+import std_srvs.srv
 #import actionlib_msgs.msg
 import dynamic_reconfigure.server # import Server
 from thorvald_penetrometer.cfg import PenetrometerConfig
@@ -54,6 +56,14 @@ class PenetrometerServer(object):
         self._as.start()
         rospy.loginfo(" ...done")
 
+
+        rospy.loginfo("Creating services")
+        sname=name+'/save_params'
+        s = rospy.Service(sname, std_srvs.srv.Trigger, self.save_params)
+        sname=name+'/clear_errors'
+        s1 = rospy.Service(sname, std_srvs.srv.Trigger, self.clear_errors_req)
+
+
         #Creating Dyn reconf server
         rospy.loginfo("Creating dynamic reconfigure server.")
         self.dynsrv = dynamic_reconfigure.server.Server(PenetrometerConfig, self.dyn_reconf_callback)
@@ -79,11 +89,22 @@ class PenetrometerServer(object):
         
         rospy.spin()
         
-        self.write_config_to_file()
+        #self.write_config_to_file()
         self.running=False
         self.ser.close()
         
-
+    
+    
+    def clear_errors_req(self, req):
+        self.clear_errors()
+        return True, "Errors cleared"
+        
+    def save_params(self, req):
+        self.write_config_to_file()
+        return True, "saved to params.yaml"        
+        
+    
+        
     def write_config_to_file(self):
         config = dict(self.config)
         del config['groups']
