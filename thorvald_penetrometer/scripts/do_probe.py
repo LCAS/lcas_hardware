@@ -11,7 +11,7 @@ import thorvald_penetrometer.msg
 class penetrometer_probe_client(object):
     
     def __init__(self) :
-        
+        self.plotted=False
         rospy.on_shutdown(self._on_node_shutdown)
         self.client = actionlib.SimpleActionClient('/thorvald_penetrometer', thorvald_penetrometer.msg.ProbeSoilAction)
         
@@ -33,11 +33,17 @@ class penetrometer_probe_client(object):
         # Prints out the result of executing the action
         ps = self.client.get_result()  # A FibonacciResult
         print ps
-        plt.plot(ps.depth, ps.force)
-        plt.show()
+        if ps.result:
+            plt.plot(ps.depth, ps.force)
+            self.plotted=True
+            plt.show()
+        else:
+            rospy.logerr("Probe Failed")
 
     def _on_node_shutdown(self):
         self.client.cancel_all_goals()
+        if self.plotted:
+            plt.close('all')
         #sleep(2)
 
 

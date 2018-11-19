@@ -169,7 +169,7 @@ class PenetrometerServer(object):
             if field in self._decimilimiters_configs:
                 value=int(value*10)
             if field in self._centiseconds_configs:
-                value=int(value/100)
+                value=int(value/10)
             command = self._config_commands[field]+str(value)
             reply = self._config_commands[field].capitalize()+str(value)
             print command, reply
