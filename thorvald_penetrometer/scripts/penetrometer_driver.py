@@ -76,13 +76,13 @@ class PenetrometerServer(object):
         self.clear_errors()
         self.set_e_stop(False)
         self.set_power_enable(True)
-        self.send_home()
+
 
         #Creating Dyn reconf server
         rospy.loginfo("Creating dynamic reconfigure server.")
         self.dynsrv = dynamic_reconfigure.server.Server(PenetrometerConfig, self.dyn_reconf_callback)
         
-
+        self.send_home()
         rospy.loginfo("ROS init done ...")
         rospy.loginfo("ALL done ...")
         
