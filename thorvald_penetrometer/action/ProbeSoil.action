@@ -1,0 +1,10 @@
+#goal definition
+int32 order
+---
+#result definition
+bool result
+int32[] depth
+int32[] force
+---
+#feedback
+string state

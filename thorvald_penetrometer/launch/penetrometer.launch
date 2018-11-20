@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<launch>
+    <node pkg="thorvald_penetrometer" type="penetrometer_driver.py" name="thorvald_penetrometer">
+	<param name="serial_port" type="str" value='/dev/ttyACM0' />
+        <rosparam file="$(find thorvald_penetrometer)/cfg/penetrometer_params.yaml" command="load"/>
+    </node>
+
+    <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="rqt_reconfigure"/>
+</launch>
+
+
